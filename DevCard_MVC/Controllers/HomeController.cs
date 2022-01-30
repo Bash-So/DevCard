@@ -1,18 +1,24 @@
 ﻿using System;
+using System.Collections.Generic;
 using DevCard_MVC.Models;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.Extensions.Logging;
 using System.Diagnostics;
 using Microsoft.AspNetCore.Http;
+using Microsoft.AspNetCore.Mvc.Rendering;
 
 namespace DevCard_MVC.Controllers
 {
     public class HomeController : Controller
     {
-        public HomeController(ILogger<HomeController> logger)
+
+        private readonly List<Service> _services = new List<Service>
         {
-            
-        }
+            new Service(1, "نقره ای"),
+            new Service(2, "طلایی"),
+            new Service(3, "پلاتین"),
+            new Service(4, "الماسی"),
+        };
 
         public IActionResult Index()
         {
@@ -22,7 +28,10 @@ namespace DevCard_MVC.Controllers
         [HttpGet]
         public IActionResult Contact()
         {
-            var model = new Contact();
+            var model = new Contact
+            {
+                Services = new SelectList(_services, "Id", "Name")
+            };
             return View(model);
 
         }
@@ -35,10 +44,22 @@ namespace DevCard_MVC.Controllers
         //}
 
         [HttpPost]
-        public JsonResult Contact(Contact form)
+        public IActionResult Contact(Contact model)
         {
-            Console.WriteLine(form.ToString());
-            return Json(Ok());
+            model.Services = new SelectList(_services, "Id", "Name");
+            if (!ModelState.IsValid)
+            {
+                ViewBag.error = "مشکلی در پردازش داده پیش آمده است. لطفا دوباره تلاش کنید";
+                return View(model);
+            }
+
+            ModelState.Clear();
+            model = new Contact
+            {
+                Services = new SelectList(_services, "Id", "Name"),
+            };
+            ViewBag.success = "پیغام شما با موفقیت ارسال شد. با تشکر";
+            return View(model);
         }
 
 
